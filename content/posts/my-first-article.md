@@ -1,10 +1,11 @@
 +++
-title = ""
-date = ""
-author = ""
+title = "A sample article"
+date = "2019-09-30"
+author = "Blaine Price"
 cover = ""
-tags = ["", ""]
-keywords = ["", ""]
-description = ""
+keywords = ["blogging"]
+description = "A short test article"
 showFullContent = false
 +++
+
+Hello friends.
