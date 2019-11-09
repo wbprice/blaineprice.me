@@ -2,7 +2,7 @@
 title = "Hello world!"
 date = "2019-11-09"
 author = "Blaine"
-cover = ""
+cover = "img/blaine-at-gather.jpg"
 keywords = ["blogging"]
 description = ""
 showFullContent = true
