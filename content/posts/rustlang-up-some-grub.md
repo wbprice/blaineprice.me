@@ -1,6 +1,6 @@
 +++
 title = "Rustlang Up Some Grub at The Ten Top"
-date = "2019-11-09"
+date = "2019-11-10"
 author = "Blaine"
 cover = ""
 keywords = ["rustlang", "gamedev"]
