@@ -9,7 +9,7 @@ showFullContent = false
 +++
 
 "The Ten Top" is the working title of a game that I'm writing in Rust using the [Amethyst](https://fixme.com) game development
-framework. My goals with the project are to make a fun casual simulation game in the vein of Game Dev Story and Overcooked. 
+framework. My goals with the project are to make a fun casual simulation game in the vein of Game Dev Story and Overcooked.
 
 The object of the game is to make enough money to:
 
@@ -27,7 +27,7 @@ To deliver a hot dog, a specific set of conditions need to be met:
 - A hot dog link needs to be cooked to create a cooked hot dog link
 - A cooked hot dog link needs to be combined with a hotdog bun on a plate to create a servable hot dog
 
-These steps result in a (bland) hot dog.  A first attempt to code this logic might might include a lot of
+These steps result in a (bland) hot dog. A first attempt to code this logic might might include a lot of
 hotdog-specific code ("Does a hot dog bun exist", "Does a hot dog link exist?", etc).
 
 ```rust
@@ -63,8 +63,8 @@ if hot_dog_buns.len() > 1 {
 ```
 
 If a hot dog bun and a cooked hot dog link, everything exists to make a hot dog. An issue is that "The Ten Top"
-sells other kinds of food! Modelling all those cases can get tedious very quickly.  Modelling this data with a dependency graph
-helps to make the logic more managable.  In the Rust ecosystem, [`petgraph`](https://fixme.com) is a popular tool for working
+sells other kinds of food! Modelling all those cases could get tedious very quickly. Modelling this data with a dependency graph
+helps to make the logic more managable. In the Rust ecosystem, [`petgraph`](https://fixme.com) is a popular tool for working
 with dependency graphs.
 
 To model this problem, dishes, ingredients, and actions can be treated as nodes in a directed graph:
@@ -83,7 +83,7 @@ enum Dishes {
     HotDog
 }
 
-// Ingredients are base components that can be cooked 
+// Ingredients are base components that can be cooked
 // or combined to create one or more dishes
 #[derive(Debug, PartialEq, Eq, Copy, Clone, PartialOrd, Ord, Hash)]
 enum Ingredients {
@@ -98,7 +98,7 @@ enum Actions {
     CookIngredient
 }
 
-// Each graph node needs to have a specific type. 
+// Each graph node needs to have a specific type.
 // We can use a nested enum to model this
 #[derive(Debug, PartialEq, Eq, Copy, Clone, PartialOrd, Ord, Hash)]
 enum Food {
@@ -148,4 +148,72 @@ graph.add_edge(
     Food::Dishes(Dishes::HotDog),
     1.,
 );
+
+// After adding nodes to the graph and creating edges between
+// nodes, `petgraph` can be used to print a directed graph in GraphViz format
+
+println!(
+    "{:?}",
+    Dot::with_config(&cookbook.graph, &[Config::EdgeNoLabel])
+);
+```
+
+When run, this code prints:
+
+```rust
+digraph {
+    0 [label="Dishes(HotDog)"]
+    1 [label="Ingredients(HotDogBun)"]
+    2 [label="Ingredients(HotDogLink)"]
+    3 [label="Ingredients(HotDogLinkCooked)"]
+    4 [label="Actions(Cook)"]
+    3 -> 0
+    1 -> 0
+    2 -> 3
+    4 -> 3
+}
+```
+
+The graph can be represented visually:
+
+![graphviz](https://user-images.githubusercontent.com/2590422/67796146-dd17cf00-fa55-11e9-95ea-272d88ec50b8.png)
+
+Now that information about making hot dogs in in the graph, we can use the graph to find requirements for a given item.
+
+```rust
+// Ingredients needed to make a hot dog
+let food_node = Food::Dishes(Dishes::HotDog);
+
+let hot_dog_ingredients = graph
+    .neigbhors_directed(food_node, Direction::Incoming);
+
+for node in hot_dog_ingredients {
+    dbg!(node);
+}
+
+// Prints
+// node = Ingredients::HotDogLinkCooked
+// node = Ingredients::HotDogBun
+```
+
+Once a vector of (what is the graph word for this??) exists, we can walk through each step.  
+For example, if a cooked hot dog link exists, it can be used to make a hot dog. If not, we need to tell a worker to cook a hot dog.
+
+Looking at neighbor nodes of a cooked hot dog link, we can get a sense of what goes into a cooked hotdog.
+
+```rust
+// Ingredients needed to make a hot dog
+let food_node = Food::Ingredients(Ingredients::CookedHotDogLink);
+
+let cooked_hot_dog_requirements = graph
+    .neigbhors_directed(food_node, Direction::Incoming)
+    .collect();
+
+for node in cooked_hot_dog_requirements {
+    dbg!(node);
+}
+
+// Prints
+// node = Ingredients::HotDogLink
+// node = Actions::HotDogBun
 ```
