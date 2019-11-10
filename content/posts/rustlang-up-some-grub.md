@@ -24,10 +24,10 @@ To deliver a hot dog, a specific set of conditions need to be met:
 
 - A hot dog bun needs to exist
 - A hot dog link needs to exist
-- A hot dog link needs to be cooked
-- A cooked hot dog link needs to be combined with a hotdog bun on a plate
+- A hot dog link needs to be cooked to create a cooked hot dog link
+- A cooked hot dog link needs to be combined with a hotdog bun on a plate to create a servable hot dog
 
-These steps result in a (pretty bland, to be honest) hot dog.  A first attempt to code this logic might would include a lot of
+These steps result in a (bland) hot dog.  A first attempt to code this logic might might include a lot of
 hotdog-specific code ("Does a hot dog bun exist", "Does a hot dog link exist?", etc).
 
 ```rust
@@ -48,19 +48,104 @@ if hot_dog_buns.len() > 1 {
     // A hot dog bun exists
     if cooked_hot_dog_links.len() > 1 {
         // A cooked hot dog link exists
-
         // OK, that's everything.
         // A hot dog can be made!
         make_hot_dog();
     } else {
         // Find a hot dog link and cook it
-        // What if it doesn't exist?
+        // Try again next tick!
         cook_hot_dog_link();
     }
+} else {
+    // Waiting for a hot dog bun to exist!
+    // Try again next tick?
 }
 ```
 
 If a hot dog bun and a cooked hot dog link, everything exists to make a hot dog. An issue is that "The Ten Top"
-sells other kinds of food! Modelling each of those 
+sells other kinds of food! Modelling all those cases can get tedious very quickly.  Modelling this data with a dependency graph
+helps to make the logic more managable.  In the Rust ecosystem, [`petgraph`](https://fixme.com) is a popular tool for working
+with dependency graphs.
 
+To model this problem, dishes, ingredients, and actions can be treated as nodes in a directed graph:
 
+```rust
+use petgraph::{
+    dot::{Config, Dot},
+    graphmap::GraphMap,
+    Directed,
+    Direction
+};
+
+// Dishes represent completed orders that can be served to a customer
+#[derive(Debug, PartialEq, Eq, Copy, Clone, PartialOrd, Ord, Hash)]
+enum Dishes {
+    HotDog
+}
+
+// Ingredients are base components that can be cooked 
+// or combined to create one or more dishes
+#[derive(Debug, PartialEq, Eq, Copy, Clone, PartialOrd, Ord, Hash)]
+enum Ingredients {
+    HotDogBun,
+    HotDogLink,
+    HotDogLinkCooked
+}
+
+// Actions represent tasks to created cooked variants of ingredients
+#[derive(Debug, PartialEq, Eq, Copy, Clone, PartialOrd, Ord, Hash)]
+enum Actions {
+    CookIngredient
+}
+
+// Each graph node needs to have a specific type. 
+// We can use a nested enum to model this
+#[derive(Debug, PartialEq, Eq, Copy, Clone, PartialOrd, Ord, Hash)]
+enum Food {
+    Dishes(Dishes),
+    Ingredients(Ingredients),
+    Actions(Actions)
+}
+
+// Create an empty, mutable graph.
+let mut graph = GraphMap::new();
+
+// Add nodes for each action
+graph.add_node(Food::Actions(Actions::CookIngredient));
+
+// Add nodes for each hot dog ingredient
+graph.add_node(Food::Ingredients(Ingredients::HotDogBun));
+graph.add_node(Food::Ingredients(Ingredients::HotDogLink));
+graph.add_node(Food::Ingredients(Ingredients::HotDogLinkCooked));
+
+// Add a node for the hot dog dish
+graph.add_node(Food::Dishes(Dishes::HotDog));
+
+// A hot dog link needs to be cooked to make a cooked hot dog link
+graph.add_edge(
+    Food::Actions(Actions::CookIngredient),
+    Food::Ingredients(Ingredients::HotDogLinkCooked),
+    1.,
+);
+
+// A hot dog link is required to make a cooked hot dog link
+graph.add_edge(
+    Food::Ingredients(Ingredients::HotDogLink),
+    Food::Ingredients(Ingredients::HotDogLinkCooked),
+    1.,
+);
+
+// A cooked hot dog link is needed to make a hot dog
+graph.add_edge(
+    Food::Ingredients(Ingredients::HotDogLinkCooked),
+    Food::Dishes(Dishes::HotDog),
+    1.,
+);
+
+// A hot dog bun is needed to make a hot dog
+graph.add_edge(
+    Food::Ingredients(Ingredients::HotDogBun),
+    Food::Dishes(Dishes::HotDog),
+    1.,
+);
+```
