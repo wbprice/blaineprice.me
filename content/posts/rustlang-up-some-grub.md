@@ -176,9 +176,9 @@ digraph {
 
 The graph can be represented visually:
 
-![graphviz](https://user-images.githubusercontent.com/2590422/67796146-dd17cf00-fa55-11e9-95ea-272d88ec50b8.png)
+![graphviz](https://user-images.githubusercontent.com/2590422/69379628-ccd2c880-0c7e-11ea-87bb-6b4d3f36b1f4.png)
 
-Now that information about making hot dogs in in the graph, we can use the graph to find requirements for a given item.
+Now that information about making hot dogs is in the graph, we can use the graph to find requirements for a given item.
 
 ```rust
 // Ingredients needed to make a hot dog
