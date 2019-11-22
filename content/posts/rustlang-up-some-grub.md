@@ -355,7 +355,7 @@ mod tests {
         let ingredients = cookbook.ingredients(Food::Dishes(Dishes::HotDog));
         assert_eq!(ingredients.len(), 2);
         assert!(ingredients.contains(&Ingredients::HotDogBun));
-        assert!(ingredients.contains(&Ingredients::HotDogWeinerCooked));
+        assert!(ingredients.contains(&Ingredients::HotDogLinkCooked));
     }
 }
 ```
