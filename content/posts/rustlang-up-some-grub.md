@@ -2,7 +2,7 @@
 title = "Rustlang Up Some Grub at The Ten Top"
 date = "2019-11-21"
 author = "Blaine"
-cover = ""
+cover = "img/food_truck_cropped.jpg"
 keywords = ["rustlang", "gamedev"]
 description = "\"The Ten Top\" is the working title of a game that I'm writing in Rust using the [Amethyst](https://amethyst.rs/) game development framework. My goals with the project are to make a fun casual simulation game in the vein of Game Dev Story and Overcooked."
 showFullContent = false
@@ -342,7 +342,7 @@ impl Cookbook {
 }
 ```
 
-To the consumer, this looks like:
+The cookbook would be used like this:
 
 ```rust
 #[cfg(test)]
